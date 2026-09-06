@@ -14,8 +14,19 @@ endif
 
 SRCS = src/main.c \
        src/lexer.c \
-	   src/parser.c \
-	   src/executor.c \
+	   src/parser/commands.c \
+	   src/parser/condition.c \
+	   src/parser/control.c \
+	   src/parser/parser.c \
+	   src/parser/tools.c \
+	   src/executor/commands.c \
+	   src/executor/executor.c \
+	   src/executor/expand.c \
+	   src/executor/pipline.c \
+	   src/executor/redirect.c \
+	   src/executor/script.c \
+	   src/executor/test.c \
+	   src/executor/tools.c \
 	   src/prompt.c	\
 	   src/symbol.c \
 	   src/history.c

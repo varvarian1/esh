@@ -106,7 +106,11 @@ Token *tokenize(const char *input, int *tokenCount) {
                     APPEND(ch);
                     position++;
                     state = STATE_IN_WORD;
-                } else if (category == CHAR_DOLLAR) {
+                } else if (category == CHAR_EQUALS) {
+                    APPEND(ch);
+                    position++;
+                    state = STATE_IN_WORD;
+                }else if (category == CHAR_DOLLAR) {
                     APPEND(ch);
                     position++;
                     state = STATE_IN_WORD;
@@ -153,6 +157,9 @@ Token *tokenize(const char *input, int *tokenCount) {
 
             case STATE_IN_WORD:
                 if (category == CHAR_GENERAL) {
+                    APPEND(ch);
+                    position++;
+                } else if (category == CHAR_EQUALS) {
                     APPEND(ch);
                     position++;
                 } else if (category == CHAR_BACKSLASH) {

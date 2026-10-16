@@ -1,6 +1,6 @@
-# V-SHELL
+# esh
 
-V-SHELL is a lightweight command-line interpreter (shell) written in C.
+esh is a lightweight command-line interpreter (shell) written in C.
 
 ### Features
 

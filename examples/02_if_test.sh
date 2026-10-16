@@ -1,4 +1,4 @@
-#!/usr/local/bin/v-shell
+#!/usr/local/bin/esh
 
 echo "=== Testing if/then/else ==="
 

@@ -2,7 +2,7 @@ CC = gcc
 
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
-TARGET = v-shell
+TARGET = esh
 
 CFLAGS = -Wall -Wextra -O2
 LDFLAGS = -lreadline -lhistory

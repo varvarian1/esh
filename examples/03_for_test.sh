@@ -1,4 +1,4 @@
-#!/usr/local/bin/v-shell
+#!/usr/local/bin/esh
 
 for i in 1 2; do
 	echo $i

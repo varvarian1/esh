@@ -1,4 +1,4 @@
-#!/usr/local/bin/v-shell
+#!/usr/local/bin/esh
 
 echo "=== Test condition with && ==="
 if [ -f /etc/passwd ] && [ -r /etc/passwd ]; then

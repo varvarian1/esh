@@ -1,4 +1,4 @@
-#!/usr/local/bin/v-shell
+#!/usr/local/bin/esh
 
 while true; do
     echo "Loop"

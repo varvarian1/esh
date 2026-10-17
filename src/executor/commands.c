@@ -111,6 +111,7 @@ int execute_command(ASTNode *node) {
     } else {
         int status;
         waitpid(pid, &status, 0);
+        free_expanded_argv(expanded_argv, argc);
         if (WIFEXITED(status)) {
             return WEXITSTATUS(status);
         }

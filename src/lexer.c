@@ -46,7 +46,7 @@ Token *tokenize(const char *input, int *tokenCount) {
     char *lexem = NULL;
     int lexemLen = 0;
     State state = STATE_GENERAL;
-    int line = 1, column = 1;
+    int line = 1;
 
     /* append character to string with realloc and null-termination */
     #define APPEND(c) do {                    \
@@ -96,7 +96,6 @@ Token *tokenize(const char *input, int *tokenCount) {
                 }
                 if (category == CHAR_NEWLINE) {
                     line++;
-                    column = 1;
                     position++;
                     continue;
                 }

@@ -1,4 +1,4 @@
-
+#include "../../include/symbol.h"
 #include "../../include/executor.h"
 
 int execute(ASTNode *node) {

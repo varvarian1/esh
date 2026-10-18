@@ -16,6 +16,12 @@ ASTNode *parse_list(ParserState *ps) {
             break;
         }
 
+        /* skip empty commands: consecutive ; or \n */
+        if (tok->type == TOKEN_SEMICOLON) {
+            advance(ps);
+            continue;
+        }
+
         /* stop on fi, else, done, or EOF */
         if (tok->type == TOKEN_FI || tok->type == TOKEN_ELSE || tok->type == TOKEN_DONE || tok->type == TOKEN_EOF) {
             break;

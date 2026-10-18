@@ -96,6 +96,7 @@ Token *tokenize(const char *input, int *tokenCount) {
                 }
                 if (category == CHAR_NEWLINE) {
                     line++;
+                    ADD_TOKEN(TOKEN_SEMICOLON, NULL);
                     position++;
                     continue;
                 }

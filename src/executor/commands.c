@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include "../../include/executor.h"
@@ -22,12 +23,6 @@ int execute_command(ASTNode *node) {
     }
     expanded_argv[argc] = NULL;
     char **argv = expanded_argv;
-
-    if (is_executable_script(argv[0])) {
-        int status = execute_script(argv[0], argc-1, &argv[1]);
-        free_expanded_argv(expanded_argv, argc);
-        return status;
-    }
 
     if (strcmp(argv[0], "exit") == 0) {
         int code;
@@ -97,6 +92,15 @@ int execute_command(ASTNode *node) {
         return status;
     }
 
+    if (strchr(argv[0], '=') != NULL) {
+        char *eq = strchr(argv[0], '=');
+        *eq = '\0';
+        set_symbol(argv[0], eq + 1, 0);
+        *eq = '=';
+        free_expanded_argv(expanded_argv, argc);
+        return 0;
+    }
+
     pid_t pid = fork();
     if (pid == -1) {
         perror("fork");
@@ -104,11 +108,22 @@ int execute_command(ASTNode *node) {
         return -1;
     }
     if (pid == 0) {
+        /* Child process */
         export_environment();
         execvp(argv[0], argv);
+        
+        /* If execvp failed because it's a script without a shebang,
+         * fall back to interpreting it with esh but still
+         * inside the child, so the parent remains isolated. */
+        if (errno == ENOEXEC) {
+            int status = execute_script(argv[0], argc - 1, &argv[1]);
+            exit(status);
+        }
+        
         perror("execvp");
         exit(1);
     } else {
+        /* Parent process */
         int status;
         waitpid(pid, &status, 0);
         free_expanded_argv(expanded_argv, argc);

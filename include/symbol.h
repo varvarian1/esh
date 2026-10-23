@@ -8,6 +8,18 @@ typedef struct Symbol
     struct Symbol *next;
 } Symbol;
 
+typedef struct Alias
+{
+    char *name;
+    char *value;
+    struct Alias *next;
+} Alias;
+
+int set_alias(const char *name, const char *value);
+int unset_alias(const char *name);
+char *get_alias_value(const char *name);
+void print_aliases(void);
+
 void import_environment(void);
 Symbol *get_symbol(const char *name);
 int set_symbol(const char *name, const char *value, int exported);

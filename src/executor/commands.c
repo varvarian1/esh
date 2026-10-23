@@ -8,6 +8,39 @@
 #include "../../include/symbol.h"
 #include "../../include/history.h"
 
+#define MAX_ALIAS_EXPANSIONS 10
+
+/* Split a string into words by whitespace.
+ * Returns a NULL-terminated array of strdup'ed strings.
+ * The caller owns both the array and the strings. */
+static char **split_words(const char *str, int *count) {
+    char **words = NULL;
+    int n = 0;
+    const char *p = str;
+
+    while (*p) {
+        while (*p == ' ' || *p == '\t') p++;
+        if (*p == '\0') break;
+
+        const char *start = p;
+        while (*p && *p != ' ' && *p != '\t') p++;
+        size_t len = p - start;
+
+        char *w = malloc(len + 1);
+        if (!w) break;
+        memcpy(w, start, len);
+        w[len] = '\0';
+
+        char **tmp = realloc(words, (n + 1) * sizeof(char *));
+        if (!tmp) { free(w); break; }
+        words = tmp;
+        words[n++] = w;
+    }
+
+    *count = n;
+    return words;
+}
+
 int execute_command(ASTNode *node) {
     char **origin_argv = node->data.command.argv;
     int argc = node->data.command.argc;
@@ -23,6 +56,40 @@ int execute_command(ASTNode *node) {
     }
     expanded_argv[argc] = NULL;
     char **argv = expanded_argv;
+
+    int depth = 0;
+    while (depth < MAX_ALIAS_EXPANSIONS) {
+        char *alias_val = get_alias_value(argv[0]);
+        if (!alias_val) break;
+
+        int awc;
+        char **aw = split_words(alias_val, &awc);
+        if (awc == 0) { free(aw); break; }
+
+        int new_argc = awc + (argc - 1);
+        char **new_argv = malloc((new_argc + 1) * sizeof(char *));
+        if (!new_argv) {
+            for (int i = 0; i < awc; i++) free(aw[i]);
+            free(aw);
+            break;
+        }
+
+        /* Copy alias words and original args (except argv[0]) into new_argv */
+        int k = 0;
+        for (int i = 0; i < awc; i++) new_argv[k++] = aw[i];
+        for (int i = 1; i < argc; i++) new_argv[k++] = argv[i];
+        new_argv[new_argc] = NULL;
+
+        /* Free old command name and old array (strings are moved to new_argv) */
+        free(argv[0]);
+        free(aw);
+        free(expanded_argv);
+
+        expanded_argv = new_argv;
+        argv = expanded_argv;
+        argc = new_argc;
+        depth++;
+    }
 
     if (strcmp(argv[0], "exit") == 0) {
         int code;
@@ -83,6 +150,36 @@ int execute_command(ASTNode *node) {
     if (strcmp(argv[0], "continue") == 0) {
         free_expanded_argv(expanded_argv, argc);
         return CONTINUE_CODE;
+    }
+
+    if (strcmp(argv[0], "alias") == 0) {
+        if (argc == 1) {
+            print_aliases();
+        } else {
+            for (int i = 1; i < argc; i++) {
+                char *eq = strchr(argv[i], '=');
+                if (eq) {
+                    *eq = '\0';
+                    set_alias(argv[i], eq+1);
+                    *eq = '=';
+                } else {
+                    char *val = get_alias_value(argv[i]);
+                    if (val) { printf("alias %s='%s'\n", argv[i], val); }
+                }
+            }
+        }
+
+        free_expanded_argv(expanded_argv, argc);
+        return 0;
+    }
+
+    if (strcmp(argv[0], "unalias") == 0) {
+        for (int i = 1; i < argc; i++) {
+            unset_alias(argv[i]);
+        }
+
+        free_expanded_argv(expanded_argv, argc);
+        return 0;
     }
 
     if (strcmp(argv[0], "[") == 0) {

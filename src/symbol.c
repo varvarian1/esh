@@ -5,6 +5,7 @@
 
 #include "../include/symbol.h"
 
+static Alias *aliasTable = NULL;
 static Symbol *symbol_table = NULL;
 static char **positional_argv = NULL;
 static int positional_argc = 0;
@@ -126,4 +127,59 @@ void export_environment(void) {
 
 int get_positional_argc(void) {
     return positional_argc;
+}
+
+static Alias *find_alias(const char *name) {
+    Alias *a = aliasTable;
+    while (a) {
+        if (strcmp(a->name, name) == 0) return a;
+        a = a->next;
+    }
+    return NULL;
+}
+
+int set_alias(const char *name, const char *value) {
+    Alias *a = find_alias(name);
+    if (a) {
+        free(a->value);
+        a->value = strdup(value);
+        return 0;
+    }
+    a = malloc(sizeof(Alias));
+    if (!a) return -1;
+    a->name = strdup(name);
+    a->value = strdup(value);
+    a->next = aliasTable;
+    aliasTable = a;
+    return 0;
+}
+
+int unset_alias(const char *name) {
+    Alias *prev = NULL, *a = aliasTable;
+    while (a) {
+        if (strcmp(a->name, name) == 0) {
+            if (prev) prev->next = a->next;
+            else aliasTable = a->next;
+            free(a->name);
+            free(a->value);
+            free(a);
+            return 0;
+        }
+        prev = a;
+        a = a->next;
+    }
+    return -1;
+}
+
+char *get_alias_value(const char *name) {
+    Alias *a = find_alias(name);
+    return a ? a->value : NULL;
+}
+
+void print_aliases(void) {
+    Alias *a = aliasTable;
+    while (a) {
+        printf("alias %s='%s'\n", a->name, a->value);
+        a = a->next;
+    }
 }
